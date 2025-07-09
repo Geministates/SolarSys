@@ -94,6 +94,57 @@ export const planetaryData = {
   }
 };
 
+export const satelliteData = {
+  iss: {
+    id: 'iss',
+    name: 'International Space Station',
+    radius: 0.08,
+    color: '#C0C0C0',
+    orbitRadius: 6.5,
+    orbitSpeed: 0.08,
+    parent: 'earth',
+    description: 'The International Space Station is a large spacecraft in orbit around Earth.',
+    facts: [
+      'Altitude: 408 km above Earth',
+      'Speed: 28,000 km/h',
+      'Crew: 3-6 astronauts',
+      'Launched: 1998'
+    ]
+  },
+  hubble: {
+    id: 'hubble',
+    name: 'Hubble Space Telescope',
+    radius: 0.06,
+    color: '#4A90E2',
+    orbitRadius: 7.2,
+    orbitSpeed: 0.06,
+    parent: 'earth',
+    description: 'The Hubble Space Telescope is a space-based observatory that has revolutionized astronomy.',
+    facts: [
+      'Altitude: 547 km above Earth',
+      'Launch: April 24, 1990',
+      'Mirror diameter: 2.4 meters',
+      'Images taken: Over 1.5 million'
+    ]
+  },
+  gps: {
+    id: 'gps',
+    name: 'GPS Satellite',
+    radius: 0.05,
+    color: '#FFD700',
+    orbitRadius: 8.5,
+    orbitSpeed: 0.04,
+    parent: 'earth',
+    description: 'GPS satellites provide global positioning and navigation services.',
+    facts: [
+      'Altitude: 20,200 km above Earth',
+      'Constellation: 24+ satellites',
+      'Orbit period: 12 hours',
+      'Accuracy: Within 3 meters'
+    ]
+  }
+};
+
 export const simulationSettings = {
   timeSpeed: 1,
   showOrbits: true,
