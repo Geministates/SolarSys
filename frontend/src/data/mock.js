@@ -15,7 +15,8 @@ export const planetaryData = {
       'Age: 4.6 billion years'
     ],
     texture: '/textures/sun.jpg',
-    emissive: true
+    emissive: true,
+    hasFlares: true
   },
   mercury: {
     id: 'mercury',
