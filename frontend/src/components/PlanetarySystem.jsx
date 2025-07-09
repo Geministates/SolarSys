@@ -6,44 +6,46 @@ import * as THREE from 'three';
 
 // Solar flare particle system
 const SolarFlares = ({ position }) => {
-  const flareRef = useRef();
   const particlesRef = useRef();
+  const particleCount = 100;
   
   useFrame(({ clock }) => {
     if (particlesRef.current) {
       const time = clock.getElapsedTime();
-      const positions = particlesRef.current.attributes.position.array;
+      const positions = particlesRef.current.geometry.attributes.position.array;
       
-      for (let i = 0; i < positions.length; i += 3) {
-        const angle = (i / 3) * 0.1 + time * 0.5;
+      for (let i = 0; i < particleCount; i++) {
+        const i3 = i * 3;
+        const angle = (i / particleCount) * Math.PI * 2 + time * 0.5;
         const radius = 6 + Math.sin(time * 2 + i * 0.1) * 2;
-        positions[i] = Math.cos(angle) * radius;
-        positions[i + 1] = Math.sin(angle * 2) * 0.5;
-        positions[i + 2] = Math.sin(angle) * radius;
+        
+        positions[i3] = Math.cos(angle) * radius;
+        positions[i3 + 1] = Math.sin(angle * 2) * 0.5;
+        positions[i3 + 2] = Math.sin(angle) * radius;
       }
       
-      particlesRef.current.attributes.position.needsUpdate = true;
+      particlesRef.current.geometry.attributes.position.needsUpdate = true;
     }
   });
 
-  const flarePositions = new Float32Array(300);
-  for (let i = 0; i < 100; i++) {
-    const angle = (i / 100) * Math.PI * 2;
+  const particlePositions = new Float32Array(particleCount * 3);
+  
+  for (let i = 0; i < particleCount; i++) {
+    const angle = (i / particleCount) * Math.PI * 2;
     const radius = 6 + Math.random() * 2;
-    flarePositions[i * 3] = Math.cos(angle) * radius;
-    flarePositions[i * 3 + 1] = (Math.random() - 0.5) * 2;
-    flarePositions[i * 3 + 2] = Math.sin(angle) * radius;
+    particlePositions[i * 3] = Math.cos(angle) * radius;
+    particlePositions[i * 3 + 1] = (Math.random() - 0.5) * 2;
+    particlePositions[i * 3 + 2] = Math.sin(angle) * radius;
   }
 
   return (
     <group position={position}>
-      <points>
+      <points ref={particlesRef}>
         <bufferGeometry>
           <bufferAttribute
-            ref={particlesRef}
-            attachObject={['attributes', 'position']}
-            array={flarePositions}
-            count={100}
+            attach="attributes-position"
+            array={particlePositions}
+            count={particleCount}
             itemSize={3}
           />
         </bufferGeometry>
