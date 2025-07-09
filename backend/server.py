@@ -10,6 +10,8 @@ from typing import List
 import uuid
 from datetime import datetime
 
+# Import the new routes
+from routes.planetary_routes import router as planetary_router
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -20,13 +22,16 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
 # Create the main app without a prefix
-app = FastAPI()
+app = FastAPI(
+    title="Planetary Design Environment API",
+    description="A comprehensive API for managing planetary systems, bodies, and simulation settings",
+    version="1.0.0"
+)
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
-
-# Define Models
+# Define Models for basic status checks
 class StatusCheck(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     client_name: str
@@ -35,10 +40,18 @@ class StatusCheck(BaseModel):
 class StatusCheckCreate(BaseModel):
     client_name: str
 
-# Add your routes to the router instead of directly to app
+# Basic health check routes
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Planetary Design Environment API is running", "version": "1.0.0"}
+
+@api_router.get("/health")
+async def health_check():
+    return {
+        "status": "healthy",
+        "timestamp": datetime.utcnow(),
+        "database": "connected"
+    }
 
 @api_router.post("/status", response_model=StatusCheck)
 async def create_status_check(input: StatusCheckCreate):
@@ -52,7 +65,10 @@ async def get_status_checks():
     status_checks = await db.status_checks.find().to_list(1000)
     return [StatusCheck(**status_check) for status_check in status_checks]
 
-# Include the router in the main app
+# Include the planetary routes
+app.include_router(planetary_router)
+
+# Include the main API router
 app.include_router(api_router)
 
 app.add_middleware(
@@ -70,6 +86,20 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+@app.on_event("startup")
+async def startup_event():
+    logger.info("Planetary Design Environment API starting up...")
+    # Initialize default data on startup
+    try:
+        from routes.planetary_routes import db as planetary_db
+        existing_bodies = await planetary_db.planetary_bodies.count_documents({})
+        if existing_bodies == 0:
+            logger.info("Initializing default planetary data...")
+            # The initialization will be handled by the endpoint
+    except Exception as e:
+        logger.error(f"Error during startup: {e}")
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+    logger.info("Database connection closed.")
