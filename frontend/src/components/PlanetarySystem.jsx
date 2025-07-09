@@ -365,7 +365,7 @@ const PlanetarySystem = () => {
           <li>• Left click + drag to rotate view</li>
           <li>• Right click + drag to pan</li>
           <li>• Mouse wheel to zoom</li>
-          <li>• Click on planets for information</li>
+          <li>• Click on planets/satellites for info</li>
         </ul>
       </div>
     </div>
