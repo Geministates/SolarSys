@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime
 
 # Import the new routes
-from .routes.planetary_routes import router as planetary_router
+from backend.routes.planetary_routes import router as planetary_router
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
