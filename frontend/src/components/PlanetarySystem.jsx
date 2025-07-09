@@ -1,8 +1,101 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Stars, Text } from '@react-three/drei';
-import { planetaryData, simulationSettings } from '../data/mock';
+import { planetaryData, satelliteData, simulationSettings } from '../data/mock';
 import * as THREE from 'three';
+
+// Solar flare particle system
+const SolarFlares = ({ position }) => {
+  const flareRef = useRef();
+  const particlesRef = useRef();
+  
+  useFrame(({ clock }) => {
+    if (particlesRef.current) {
+      const time = clock.getElapsedTime();
+      const positions = particlesRef.current.attributes.position.array;
+      
+      for (let i = 0; i < positions.length; i += 3) {
+        const angle = (i / 3) * 0.1 + time * 0.5;
+        const radius = 6 + Math.sin(time * 2 + i * 0.1) * 2;
+        positions[i] = Math.cos(angle) * radius;
+        positions[i + 1] = Math.sin(angle * 2) * 0.5;
+        positions[i + 2] = Math.sin(angle) * radius;
+      }
+      
+      particlesRef.current.attributes.position.needsUpdate = true;
+    }
+  });
+
+  const flarePositions = new Float32Array(300);
+  for (let i = 0; i < 100; i++) {
+    const angle = (i / 100) * Math.PI * 2;
+    const radius = 6 + Math.random() * 2;
+    flarePositions[i * 3] = Math.cos(angle) * radius;
+    flarePositions[i * 3 + 1] = (Math.random() - 0.5) * 2;
+    flarePositions[i * 3 + 2] = Math.sin(angle) * radius;
+  }
+
+  return (
+    <group position={position}>
+      <points>
+        <bufferGeometry>
+          <bufferAttribute
+            ref={particlesRef}
+            attachObject={['attributes', 'position']}
+            array={flarePositions}
+            count={100}
+            itemSize={3}
+          />
+        </bufferGeometry>
+        <pointsMaterial
+          color="#FF4500"
+          size={0.3}
+          transparent
+          opacity={0.6}
+          blending={THREE.AdditiveBlending}
+        />
+      </points>
+    </group>
+  );
+};
+
+// Satellite component
+const Satellite = ({ data, time, onClick, parentData }) => {
+  const meshRef = useRef();
+  
+  useFrame(() => {
+    if (meshRef.current && parentData) {
+      // Calculate parent planet position
+      const parentAngle = time * parentData.orbitSpeed;
+      const parentX = Math.cos(parentAngle) * parentData.orbitRadius;
+      const parentZ = Math.sin(parentAngle) * parentData.orbitRadius;
+      
+      // Calculate satellite position relative to parent
+      const satelliteAngle = time * data.orbitSpeed;
+      meshRef.current.position.x = parentX + Math.cos(satelliteAngle) * data.orbitRadius;
+      meshRef.current.position.z = parentZ + Math.sin(satelliteAngle) * data.orbitRadius;
+      meshRef.current.position.y = Math.sin(satelliteAngle * 0.5) * 0.5;
+    }
+  });
+
+  return (
+    <mesh
+      ref={meshRef}
+      onClick={() => onClick(data)}
+      onPointerOver={(e) => {
+        e.stopPropagation();
+        document.body.style.cursor = 'pointer';
+      }}
+      onPointerOut={(e) => {
+        e.stopPropagation();
+        document.body.style.cursor = 'default';
+      }}
+    >
+      <boxGeometry args={[data.radius * 2, data.radius, data.radius]} />
+      <meshStandardMaterial color={data.color} metalness={0.8} roughness={0.2} />
+    </mesh>
+  );
+};
 
 // Planet component
 const Planet = ({ data, time, onClick, showLabels }) => {
@@ -52,6 +145,11 @@ const Planet = ({ data, time, onClick, showLabels }) => {
           emissiveIntensity={data.emissive ? 0.3 : 0}
         />
       </mesh>
+      
+      {/* Solar flares for the Sun */}
+      {data.hasFlares && (
+        <SolarFlares position={data.position} />
+      )}
       
       {showLabels && (
         <Text
