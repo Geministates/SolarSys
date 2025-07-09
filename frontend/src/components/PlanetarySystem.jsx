@@ -216,6 +216,13 @@ const SolarSystemScene = ({ onPlanetClick, settings }) => {
         </group>
       )}
       
+      {/* Satellite orbits around Earth */}
+      {settings.showOrbits && Object.values(satelliteData).map(satellite => (
+        <group key={`satellite-orbit-${satellite.id}`}>
+          <OrbitPath radius={satellite.orbitRadius} visible={settings.showOrbits} />
+        </group>
+      ))}
+      
       {/* Planets */}
       {Object.values(planetaryData).map(planet => (
         <Planet
@@ -224,6 +231,17 @@ const SolarSystemScene = ({ onPlanetClick, settings }) => {
           time={time}
           onClick={onPlanetClick}
           showLabels={settings.showLabels}
+        />
+      ))}
+      
+      {/* Satellites */}
+      {Object.values(satelliteData).map(satellite => (
+        <Satellite
+          key={satellite.id}
+          data={satellite}
+          time={time}
+          onClick={onPlanetClick}
+          parentData={planetaryData[satellite.parent]}
         />
       ))}
     </>
